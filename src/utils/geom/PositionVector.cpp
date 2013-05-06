@@ -1136,7 +1136,17 @@ PositionVector::operator==(const PositionVector& v2) const {
     }
 }
 
-
+#ifdef SUMO_WITH_NETSIM
+SUMOReal
+PositionVector::LengthAtPosition(const Position& pos) const {
+    ContType::const_iterator i = myCont.begin();
+    const SUMOReal dist = (*i).distanceTo(pos);
+    if (dist < 0.0) {
+        return -1.0;
+    }
+    return dist;
+}
+#endif
 
 /****************************************************************************/
 

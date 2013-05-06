@@ -309,6 +309,11 @@ public:
     void removeDoublePoints(SUMOReal minDist = POSITION_EPS, bool assertLength = false);
 
     void removeColinearPoints();
+    
+#ifdef SUMO_WITH_NETSIM
+    /// Returns the length for given position
+    SUMOReal LengthAtPosition(const Position& pos) const;
+#endif
 
 private:
 

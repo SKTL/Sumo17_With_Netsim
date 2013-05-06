@@ -307,7 +307,9 @@ private:
 
 
 
-
+#ifdef SUMO_WITH_NETSIM
+    bool commandSetValueVehicleStateTable();
+#endif
 
 
 private:

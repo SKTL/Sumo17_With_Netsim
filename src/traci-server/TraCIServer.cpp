@@ -455,6 +455,11 @@ TraCIServer::dispatchCommand() {
             case CMD_SUBSCRIBE_GUI_CONTEXT:
                 success = addObjectContextSubscription(commandId);
                 break;
+#ifdef SUMO_WITH_NETSIM
+            case CMD_SET_VEHICLE_STATE_TABLE:
+                success = commandSetValueVehicleStateTable();
+                break;
+#endif
             default:
                 writeStatusCmd(commandId, RTYPE_NOTIMPLEMENTED, "Command not implemented in sumo");
         }
@@ -1132,6 +1137,143 @@ TraCIServer::readTypeCheckingPolygon(tcpip::Storage& inputStorage, PositionVecto
     }
     return true;
 }
+
+#ifdef SUMO_WITH_NETSIM
+bool TraCIServer::commandSetValueVehicleStateTable()
+    {
+    // This command will always get a fresh copy of vehicle
+    // state table. Hence, always clear the existing table
+    // before saving the new values.
+    MSNet::getInstance()->clearVehicleStateTable();
+
+    int variable = myInputStorage.readUnsignedByte();
+    if (variable != VAR_SPEED)
+        {
+        writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                       "Change Vehicle State Table: unsupported variable specified");
+        return false;
+        }
+
+    std::string id = myInputStorage.readString();
+    if (id != "VST0")
+        {
+        writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                       "Change Vehicle State Table: unsupported id");
+        return false;
+        }
+
+    int tblDataType = myInputStorage.readUnsignedByte();
+    if (tblDataType != TYPE_COMPOUND)
+        {
+        writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                       "Message type should be TYPE_COMPOUND");
+        return false;
+        }
+
+    int tblItemCnt = myInputStorage.readInt();
+    if (tblItemCnt <= 0)
+        {
+        writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                       "Message length is invalid");
+        return false;
+        }
+
+    std::string receiverId = "";
+    for(int i = 0; i < tblItemCnt; i++)
+        {
+        int itemDataType = myInputStorage.readUnsignedByte();
+
+        if(itemDataType == TYPE_STRING)
+            {
+            //// Receiver ID
+            receiverId = myInputStorage.readString();
+            }
+        else if(itemDataType == TYPE_COMPOUND)
+            {
+            //// Sender List
+            int itemCnt = myInputStorage.readInt();
+            if (itemCnt != 5)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "State length is invalid");
+                return false;
+                }
+
+            // Sender Id
+            int dataType = myInputStorage.readUnsignedByte();
+            if(dataType != TYPE_STRING)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "Sender Id type is invalid");
+                return false;
+                }
+            std::string senderId = myInputStorage.readString();
+
+            // Speed
+            dataType = myInputStorage.readUnsignedByte();
+            if(dataType != TYPE_DOUBLE)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "Sender speed type is invalid");
+                return false;
+                }
+            double senderSpeed = myInputStorage.readDouble();
+
+            // Pos_X
+            dataType = myInputStorage.readUnsignedByte();
+            if(dataType != TYPE_DOUBLE)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "Sender pos_x type is invalid");
+                return false;
+                }
+            double senderPosX = myInputStorage.readDouble();
+
+            // Pos_Y
+            dataType = myInputStorage.readUnsignedByte();
+            if(dataType != TYPE_DOUBLE)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "Sender pos_y type is invalid");
+                return false;
+                }
+            double senderPosY = myInputStorage.readDouble();
+
+            // Pos_On_Lane
+            dataType = myInputStorage.readUnsignedByte();
+            if(dataType != TYPE_DOUBLE)
+                {
+                writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                               "Sender pos_on_lane type is invalid");
+                return false;
+                }
+            double senderPosOnLane = myInputStorage.readDouble();
+
+            /// Update the table
+            MSNet::getInstance()->addValueVehicleState(receiverId,
+                                                       senderId,
+                                                       senderSpeed,
+                                                       senderPosX,
+                                                       senderPosY,
+                                                       senderPosOnLane);
+            }
+        else
+            {
+            writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_ERR,
+                           "Message type should be TYPE_STRING or TYPE_COMPOUND");
+            return false;
+            }
+        }
+
+        // Update successful. There is no response command
+        writeStatusCmd(CMD_SET_VEHICLE_STATE_TABLE, RTYPE_OK, "VSTable Updated");
+
+        // Display VSTable for debug purpose
+        MSNet::getInstance()->displayVehicleStateTable();
+
+        return true;
+    }
+#endif
 
 }
 

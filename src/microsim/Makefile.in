@@ -64,7 +64,7 @@ am_libmicrosim_a_OBJECTS = MSBaseVehicle.$(OBJEXT) MSEdge.$(OBJEXT) \
 	MSRoute.$(OBJEXT) MSRouteHandler.$(OBJEXT) MSVehicle.$(OBJEXT) \
 	MSVehicleContainer.$(OBJEXT) MSVehicleControl.$(OBJEXT) \
 	MSVehicleTransfer.$(OBJEXT) MSCFModel.$(OBJEXT) \
-	MSVehicleType.$(OBJEXT)
+	MSVehicleType.$(OBJEXT) MSVehicleStateTable.$(OBJEXT)
 libmicrosim_a_OBJECTS = $(am_libmicrosim_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/src
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -298,7 +298,8 @@ MSVehicleContainer.cpp MSVehicleContainer.h \
 MSVehicleControl.cpp MSVehicleControl.h \
 MSVehicleTransfer.cpp MSVehicleTransfer.h \
 MSCFModel.cpp MSCFModel.h \
-MSVehicleType.cpp MSVehicleType.h 
+MSVehicleType.cpp MSVehicleType.h \
+MSVehicleStateTable.cpp MSVehicleStateTable.h
 
 SUBDIRS = actions cfmodels devices logging output traffic_lights trigger
 all: all-recursive
@@ -383,6 +384,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MSVehicleControl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MSVehicleTransfer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MSVehicleType.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MSVehicleStateTable.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
